@@ -13,6 +13,7 @@
       --text-dark: #222;
       --stamp-bg: #fff6f9;
       --border-color: #dba2bd;
+      --gray: #ccc;
     }
 
     body {
@@ -72,18 +73,23 @@
     .button {
       background: var(--main-purple);
       color: white;
-      padding: 12px 24px;
+      padding: 10px 20px;
       border: none;
       border-radius: 8px;
       font-size: 1rem;
+      margin: 10px;
       cursor: pointer;
-      margin: 20px auto;
-      display: inline-block;
+    }
+
+    .button.gray {
+      background-color: var(--gray);
+      color: #666;
+      cursor: default;
     }
 
     #status {
       font-size: 0.95rem;
-      margin-bottom: 40px;
+      margin: 30px 0 50px;
     }
   </style>
 </head>
@@ -93,24 +99,38 @@
     <img src="stamp_top.png" alt="やまなしステージアートスタンプラリー">
   </header>
 
-  <h1>スタンプを3つ集めて、抽選に応募しよう！</h1>
+  <h1>スタンプを集めて最大6口まで応募しよう！</h1>
 
   <div class="stamp-container" id="stampContainer"></div>
   <div id="status"></div>
 
   <script>
     const TOTAL_STAMPS = 19;
-    const REQUIRED = 3;
+    const MAX_ENTRIES = 6;
+    const STAMPS_PER_ENTRY = 3;
+
+    const formUrls = [
+      "https://docs.google.com/forms/d/e/1FAIpQLScfCWGnRAC5OFXqTv9Z_sFcqj_KIiyLbtFQq4hszYj3eZvWIA/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLSetsPU-_uJB52WRAFWyFAOI56AEFPF6IvsXJbK1XGjMdC9fuA/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLScbVzuIk4FqB8k-yuxZ_mJMhvIOg0c_gKNRoszkZzcm7qdbow/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLSflMBnq308pLgDr9gzapsbDtjWKAFg5IdKXnC2iGYdfkRtwPw/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLSfRR1c4_319Xd_q_ecJVl0UpdmjZC_sYCKqilrmFQVSkSjSeA/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLSebfk72tCcXdFfyRdFWzTSikt5IzMB0IUD7Ssd8DulJUV9VsA/viewform?usp=header"
+    ];
+
+    const labels = ["", "2nd", "3rd", "4th", "5th", "Final"];
+
     const params = new URLSearchParams(window.location.search);
     const currentId = params.get('id');
-    const stamps = JSON.parse(localStorage.getItem('stamps') || '[]');
-    const applied = localStorage.getItem('applied') === 'true';
+    let stamps = JSON.parse(localStorage.getItem('stamps') || '[]');
+    let appliedCount = parseInt(localStorage.getItem('applied_count') || '0');
 
     if (currentId && !stamps.includes(currentId)) {
       stamps.push(currentId);
       localStorage.setItem('stamps', JSON.stringify(stamps));
     }
 
+    // スタンプ表示
     const container = document.getElementById('stampContainer');
     for (let i = 1; i <= TOTAL_STAMPS; i++) {
       const div = document.createElement('div');
@@ -120,20 +140,35 @@
       container.appendChild(div);
     }
 
+    // 応募ボタン表示
     const status = document.getElementById('status');
-    if (applied) {
-      status.innerHTML = '<p>✅ すでに応募済みです。ご参加ありがとうございました！</p>';
-    } else if (stamps.length >= REQUIRED) {
+    const entriesAvailable = Math.min(Math.floor(stamps.length / STAMPS_PER_ENTRY), MAX_ENTRIES);
+
+    for (let i = 0; i < entriesAvailable; i++) {
       const btn = document.createElement('button');
-      btn.className = 'button';
-      btn.textContent = '🎁 応募フォームへ';
-      btn.onclick = () => {
-        localStorage.setItem('applied', 'true');
-        window.location.href = 'https://docs.google.com/forms/d/e/1FAIpQLScfCWGnRAC5OFXqTv9Z_sFcqj_KIiyLbtFQq4hszYj3eZvWIA/viewform?usp=header';
-      };
+      const label = labels[i] ? `（${labels[i]}）` : "";
+      if (i < appliedCount) {
+        btn.className = 'button gray';
+        btn.textContent = `✅ 応募済み ${label}`;
+        btn.disabled = true;
+      } else if (i === appliedCount) {
+        btn.className = 'button';
+        btn.textContent = `🎁 応募フォームへ${label}`;
+        btn.onclick = () => {
+          localStorage.setItem('applied_count', (appliedCount + 1).toString());
+          window.location.href = formUrls[i];
+        };
+      }
       status.appendChild(btn);
-    } else {
-      status.innerHTML = `<p>あと ${REQUIRED - stamps.length} 個で応募できます！</p>`;
+    }
+
+    if (entriesAvailable < MAX_ENTRIES) {
+      const nextNeeded = STAMPS_PER_ENTRY * (appliedCount + 1) - stamps.length;
+      if (nextNeeded > 0) {
+        const p = document.createElement('p');
+        p.textContent = `あと${nextNeeded}個スタンプを集めると、次の応募が可能になります。`;
+        status.appendChild(p);
+      }
     }
   </script>
 
