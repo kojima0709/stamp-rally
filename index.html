@@ -89,7 +89,11 @@
 
     #status {
       font-size: 0.95rem;
-      margin: 30px 0 50px;
+      margin: 30px auto 50px;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
   </style>
 </head>
@@ -140,25 +144,29 @@
       container.appendChild(div);
     }
 
-    // 応募ボタン表示
     const status = document.getElementById('status');
+
+    function createButton(label, disabled, url = '', index = null) {
+      const btn = document.createElement('button');
+      btn.className = disabled ? 'button gray' : 'button';
+      btn.textContent = label;
+      if (disabled) {
+        btn.disabled = true;
+      } else {
+        btn.onclick = () => {
+          localStorage.setItem('applied_count', (index + 1).toString());
+          window.location.href = url;
+        };
+      }
+      status.appendChild(btn);
+    }
+
     for (let i = 0; i < MAX_ENTRIES; i++) {
       const label = labels[i] ? `（${labels[i]}）` : "";
       if (i < appliedCount) {
-        const btn = document.createElement('button');
-        btn.className = 'button gray';
-        btn.textContent = `✅ 応募済み ${label}`;
-        btn.disabled = true;
-        status.appendChild(btn);
-      } else if (i === appliedCount && stamps.length >= (i + 1) * STAMPS_PER_ENTRY) {
-        const btn = document.createElement('button');
-        btn.className = 'button';
-        btn.textContent = `🎁 応募フォームへ${label}`;
-        btn.onclick = () => {
-          localStorage.setItem('applied_count', (appliedCount + 1).toString());
-          window.location.href = formUrls[i];
-        };
-        status.appendChild(btn);
+        createButton(`✅ 応募済み ${label}`, true);
+      } else if (stamps.length >= (i + 1) * STAMPS_PER_ENTRY) {
+        createButton(`🎁 応募フォームへ${label}`, false, formUrls[i], i);
       }
     }
 
