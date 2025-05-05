@@ -142,27 +142,27 @@
 
     // 応募ボタン表示
     const status = document.getElementById('status');
-    const entriesAvailable = Math.min(Math.floor(stamps.length / STAMPS_PER_ENTRY), MAX_ENTRIES);
-
-    for (let i = 0; i < entriesAvailable; i++) {
-      const btn = document.createElement('button');
+    for (let i = 0; i < MAX_ENTRIES; i++) {
       const label = labels[i] ? `（${labels[i]}）` : "";
       if (i < appliedCount) {
+        const btn = document.createElement('button');
         btn.className = 'button gray';
         btn.textContent = `✅ 応募済み ${label}`;
         btn.disabled = true;
-      } else if (i === appliedCount) {
+        status.appendChild(btn);
+      } else if (i === appliedCount && stamps.length >= (i + 1) * STAMPS_PER_ENTRY) {
+        const btn = document.createElement('button');
         btn.className = 'button';
         btn.textContent = `🎁 応募フォームへ${label}`;
         btn.onclick = () => {
           localStorage.setItem('applied_count', (appliedCount + 1).toString());
           window.location.href = formUrls[i];
         };
+        status.appendChild(btn);
       }
-      status.appendChild(btn);
     }
 
-    if (entriesAvailable < MAX_ENTRIES) {
+    if (appliedCount < MAX_ENTRIES) {
       const nextNeeded = STAMPS_PER_ENTRY * (appliedCount + 1) - stamps.length;
       if (nextNeeded > 0) {
         const p = document.createElement('p');
