@@ -127,7 +127,7 @@
     const params = new URLSearchParams(window.location.search);
     const currentId = params.get('id');
     let stamps = JSON.parse(localStorage.getItem('stamps') || '[]');
-    let appliedCount = parseInt(localStorage.getItem('applied_count') || '0');
+    let appliedEntries = JSON.parse(localStorage.getItem('applied_entries') || '[false,false,false,false,false,false]');
 
     if (currentId && !stamps.includes(currentId)) {
       stamps.push(currentId);
@@ -150,32 +150,31 @@
       const btn = document.createElement('button');
       btn.className = disabled ? 'button gray' : 'button';
       btn.textContent = label;
-      if (disabled) {
-        btn.disabled = true;
-      } else {
+      if (!disabled) {
         btn.onclick = () => {
-          localStorage.setItem('applied_count', (index + 1).toString());
+          appliedEntries[index] = true;
+          localStorage.setItem('applied_entries', JSON.stringify(appliedEntries));
           window.location.href = url;
         };
+      } else {
+        btn.disabled = true;
       }
       status.appendChild(btn);
     }
 
+    const earnedEntries = Math.min(Math.floor(stamps.length / STAMPS_PER_ENTRY), MAX_ENTRIES);
+
     for (let i = 0; i < MAX_ENTRIES; i++) {
       const label = labels[i] ? `（${labels[i]}）` : "";
-      if (i < appliedCount) {
+      if (appliedEntries[i]) {
         createButton(`✅ 応募済み ${label}`, true);
-      } else if (stamps.length >= (i + 1) * STAMPS_PER_ENTRY) {
+      } else if (i < earnedEntries) {
         createButton(`🎁 応募フォームへ${label}`, false, formUrls[i], i);
-      }
-    }
-
-    if (appliedCount < MAX_ENTRIES) {
-      const nextNeeded = STAMPS_PER_ENTRY * (appliedCount + 1) - stamps.length;
-      if (nextNeeded > 0) {
-        const p = document.createElement('p');
-        p.textContent = `あと${nextNeeded}個スタンプを集めると、次の応募が可能になります。`;
-        status.appendChild(p);
+      } else {
+        const needed = (i + 1) * STAMPS_PER_ENTRY - stamps.length;
+        const msg = document.createElement('p');
+        msg.textContent = `あと${needed}個スタンプを集めると、第${i + 1}口（${labels[i] || '無印'}）の応募が可能になります。`;
+        status.appendChild(msg);
       }
     }
   </script>
