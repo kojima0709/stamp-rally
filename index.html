@@ -163,6 +163,7 @@
     }
 
     const earnedEntries = Math.min(Math.floor(stamps.length / STAMPS_PER_ENTRY), MAX_ENTRIES);
+    let nextMessageShown = false;
 
     for (let i = 0; i < MAX_ENTRIES; i++) {
       const label = labels[i] ? `（${labels[i]}）` : "";
@@ -170,11 +171,12 @@
         createButton(`✅ 応募済み ${label}`, true);
       } else if (i < earnedEntries) {
         createButton(`🎁 応募フォームへ${label}`, false, formUrls[i], i);
-      } else {
+      } else if (!nextMessageShown) {
         const needed = (i + 1) * STAMPS_PER_ENTRY - stamps.length;
         const msg = document.createElement('p');
-        msg.textContent = `あと${needed}個スタンプを集めると、第${i + 1}口（${labels[i] || '無印'}）の応募が可能になります。`;
+        msg.textContent = `あと${needed}個スタンプを集めると、次の応募が可能になります。`;
         status.appendChild(msg);
+        nextMessageShown = true;
       }
     }
   </script>
