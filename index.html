@@ -123,6 +123,8 @@
       font-size: 1rem;
       margin: 10px;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
     }
 
     .button.gray {
@@ -139,6 +141,10 @@
       flex-direction: column;
       align-items: center;
     }
+
+    footer {
+      margin: 30px 0;
+    }
   </style>
 </head>
 <body>
@@ -152,6 +158,10 @@
 
   <div class="stamp-container" id="stampContainer"></div>
   <div id="status"></div>
+
+  <footer>
+    <a class="button" href="https://www.yamanashi-artcaravan.com/" target="_blank" rel="noopener noreferrer">公式HPはこちら！</a>
+  </footer>
 
   <div id="historyModal">
     <div id="historyContent"></div>
@@ -189,7 +199,6 @@
       localStorage.setItem('history', JSON.stringify(history));
     }
 
-    // スタンプ表示
     const container = document.getElementById('stampContainer');
     for (let i = 1; i <= TOTAL_STAMPS; i++) {
       const div = document.createElement('div');
@@ -235,7 +244,6 @@
       }
     }
 
-    // 履歴モーダル
     const historyBtn = document.getElementById('historyBtn');
     const historyModal = document.getElementById('historyModal');
     const historyContent = document.getElementById('historyContent');
