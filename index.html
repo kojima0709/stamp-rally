@@ -158,6 +158,17 @@
     const MAX_ENTRIES = 6;
     const STAMPS_PER_ENTRY = 3;
 
+    const formUrls = [
+      "https://docs.google.com/forms/d/e/1FAIpQLScfCWGnRAC5OFXqTv9Z_sFcqj_KIiyLbtFQq4hszYj3eZvWIA/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLSetsPU-_uJB52WRAFWyFAOI56AEFPF6IvsXJbK1XGjMdC9fuA/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLScbVzuIk4FqB8k-yuxZ_mJMhvIOg0c_gKNRoszkZzcm7qdbow/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLSflMBnq308pLgDr9gzapsbDtjWKAFg5IdKXnC2iGYdfkRtwPw/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLSfRR1c4_319Xd_q_ecJVl0UpdmjZC_sYCKqilrmFQVSkSjSeA/viewform?usp=header",
+      "https://docs.google.com/forms/d/e/1FAIpQLSebfk72tCcXdFfyRdFWzTSikt5IzMB0IUD7Ssd8DulJUV9VsA/viewform?usp=header"
+    ];
+
+    const labels = ["", "2nd", "3rd", "4th", "5th", "Final"];
+
     const params = new URLSearchParams(window.location.search);
     const currentId = params.get('id');
     let stamps = JSON.parse(localStorage.getItem('stamps') || '[]');
@@ -182,6 +193,42 @@
       if (stamps.includes(String(i))) div.classList.add('got');
       div.textContent = stamps.includes(String(i)) ? '✓' : i;
       container.appendChild(div);
+    }
+
+    const status = document.getElementById('status');
+
+    function createButton(label, disabled, url = '', index = null) {
+      const btn = document.createElement('button');
+      btn.className = disabled ? 'button gray' : 'button';
+      btn.textContent = label;
+      if (!disabled) {
+        btn.onclick = () => {
+          appliedEntries[index] = true;
+          localStorage.setItem('applied_entries', JSON.stringify(appliedEntries));
+          window.location.href = url;
+        };
+      } else {
+        btn.disabled = true;
+      }
+      status.appendChild(btn);
+    }
+
+    const earnedEntries = Math.min(Math.floor(stamps.length / STAMPS_PER_ENTRY), MAX_ENTRIES);
+    let nextMessageShown = false;
+
+    for (let i = 0; i < MAX_ENTRIES; i++) {
+      const label = labels[i] ? `（${labels[i]}）` : "";
+      if (appliedEntries[i]) {
+        createButton(`✅ 応募済み ${label}`, true);
+      } else if (i < earnedEntries) {
+        createButton(`🎁 応募フォームへ${label}`, false, formUrls[i], i);
+      } else if (!nextMessageShown) {
+        const needed = (i + 1) * STAMPS_PER_ENTRY - stamps.length;
+        const msg = document.createElement('p');
+        msg.textContent = `あと${needed}個スタンプを集めると、次の応募が可能になります。`;
+        status.appendChild(msg);
+        nextMessageShown = true;
+      }
     }
 
     // 履歴モーダル
